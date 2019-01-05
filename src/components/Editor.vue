@@ -53,19 +53,12 @@
           :auto-upload="false"
           :multiple="false"
           :show-file-list="false"
-          :on-change="handleAvatarSuccess">
+          :on-change="uploadAvatar">
           <img v-if="resume.avatar" :src="resume.avatar" class="avatar">
           <i v-else
              slot="trigger"
              class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
-      </div>
-    </module>
-
-    <module title="自我描述">
-      <div class="input-line">
-        <div class="input-label">自我描述</div>
-        <el-input v-model="resume.self" type="textarea" :autosize="{minRows: 3}"></el-input>
       </div>
     </module>
 
@@ -106,10 +99,10 @@
         <div class="input-label">模块图标</div>
         <icon-selector v-model="section.icon"></icon-selector>
       </div>
-      <!--<div class="input-line">-->
-      <!--<div class="input-label">模块描述</div>-->
-      <!--<el-input v-model="section.desc" type="textarea" autosize></el-input>-->
-      <!--</div>-->
+      <div class="input-line">
+        <div class="input-label">模块描述</div>
+        <el-input v-model="section.desc" type="textarea" autosize></el-input>
+      </div>
       <div class="item" v-for="(item, itemID) in section.items" v-bind:key="itemID">
         <div class="input-line">
           <div class="input-label">项目名称</div>
@@ -191,21 +184,26 @@ export default {
     print () {
       this.$emit('onPrint')
     },
-    handleAvatarSuccess (f) {
+    uploadAvatar (f) {
       const file = f.raw
-      const isJPG = file.type === 'image/jpeg'
+      const isImage = file.type.startsWith('image/')
       const isLt2M = file.size / 1024 / 1024 < 2
 
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      if (!isImage) {
+        this.$message.error('上传头像必须为图片!')
         return
       }
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
+        this.$message.error('图片大小不能超过 2MB!')
         return
       }
 
-      this.$set(this.resume, 'avatar', URL.createObjectURL(file))
+      const reader = new FileReader()
+      const _this = this
+      reader.onload = function () {
+        _this.$set(_this.resume, 'avatar', this.result)
+      }
+      reader.readAsDataURL(file)
     },
     addSection () {
       this.resume.content.push({
