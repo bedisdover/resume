@@ -111,8 +111,7 @@ export default {
       position: absolute;
       right: 20px;
       top: 0;
-      width: 86px;
-      height: 86px;
+      width: 85px;
     }
 
     section {

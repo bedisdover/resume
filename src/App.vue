@@ -53,10 +53,9 @@ export default {
       }
 
       let reader = new FileReader()
-      let _this = this
-      reader.onload = function () {
-        _this.name = file.name
-        _this.resume = Object.assign({}, _this.resume, JSON.parse(this.result))
+      reader.onload = e => {
+        this.name = file.name
+        this.resume = Object.assign({}, this.resume, JSON.parse(e.target.result))
       }
       reader.readAsText(file)
     },

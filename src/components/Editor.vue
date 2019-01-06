@@ -198,12 +198,54 @@ export default {
         return
       }
 
-      const reader = new FileReader()
-      const _this = this
-      reader.onload = function () {
-        _this.$set(_this.resume, 'avatar', this.result)
-      }
-      reader.readAsDataURL(file)
+      this.compressImage(file).then(avatar => {
+        this.$set(this.resume, 'avatar', avatar)
+      })
+    },
+    compressImage (file) {
+      return new Promise(resolve => {
+        const reader = new FileReader()
+        const img = new Image()
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+
+        reader.onload = function () {
+          img.src = this.result
+        }
+        reader.readAsDataURL(file)
+
+        img.onload = function () {
+          // 图片原始尺寸
+          const originWidth = this.width
+          const originHeight = this.height
+          // 最大尺寸限制
+          const maxWidth = 85
+          const maxHeight = 85
+          // 目标尺寸
+          let targetWidth = originWidth
+          let targetHeight = originHeight
+          // 图片尺寸超过限制
+          if (originWidth > maxWidth || originHeight > maxHeight) {
+            if (originWidth / originHeight > maxWidth / maxHeight) { // 更宽，按照宽度限定尺寸
+              targetWidth = maxWidth
+              targetHeight = Math.round(maxWidth * (originHeight / originWidth))
+            } else {
+              targetHeight = maxHeight
+              targetWidth = Math.round(maxHeight * (originWidth / originHeight))
+            }
+          }
+
+          // canvas对图片进行缩放
+          canvas.width = targetWidth
+          canvas.height = targetHeight
+          // 清除画布
+          context.clearRect(0, 0, targetWidth, targetHeight)
+          // 图片压缩
+          context.drawImage(img, 0, 0, targetWidth, targetHeight)
+
+          resolve(canvas.toDataURL())
+        }
+      })
     },
     addSection () {
       this.resume.content.push({
